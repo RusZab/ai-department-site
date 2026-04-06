@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>AI Department — Customer Cabinet</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0F1117;--surface:#1A1D27;--card:#222638;--border:#2E3348;--accent:#6C5CE7;--accent2:#A29BFE;--green:#00B894;--red:#FF6B6B;--orange:#FDCB6E;--text:#E4E6EF;--muted:#8B8FA3;--mono:'JetBrains Mono',monospace}
+body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+.app{display:flex;min-height:100vh}
+.sidebar{width:250px;background:var(--surface);border-right:1px solid var(--border);padding:1.5rem 0;display:flex;flex-direction:column}
+.main{flex:1;padding:2rem 3rem;overflow-y:auto;max-height:100vh}
+.logo{padding:0 1.5rem 1.5rem;border-bottom:1px solid var(--border);margin-bottom:1rem}
+.logo h1{font-size:1.1rem;font-weight:700;color:var(--accent2)}
+.logo span{font-size:0.7rem;color:var(--muted);font-family:var(--mono);display:block;margin-top:2px}
+.nav-item{display:flex;align-items:center;gap:0.75rem;padding:0.7rem 1.5rem;color:var(--muted);cursor:pointer;transition:all .15s;font-size:0.88rem;font-weight:500;border-left:3px solid transparent}
+.nav-item:hover{color:var(--text);background:rgba(108,92,231,0.08)}
+.nav-item.active{color:var(--accent2);background:rgba(108,92,231,0.12);border-left-color:var(--accent)}
+.nav-icon{font-size:1.1rem;width:20px;text-align:center}
+.nav-spacer{flex:1}
+.nav-status{padding:1rem 1.5rem;border-top:1px solid var(--border);font-size:0.75rem}
+.status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
+.status-dot.on{background:var(--green)}
+.status-dot.off{background:var(--red)}
+
+.page-header{margin-bottom:2rem}
+.page-header h2{font-size:1.5rem;font-weight:700;margin-bottom:0.3rem}
+.page-header p{color:var(--muted);font-size:0.9rem}
+
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin-bottom:1.25rem}
+.card h3{font-size:1rem;font-weight:600;margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-bottom:1.5rem}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem}
+.stat-val{font-size:1.8rem;font-weight:700;font-family:var(--mono)}
+.stat-label{font-size:0.75rem;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:0.05em}
+.stat-val.green{color:var(--green)}
+.stat-val.accent{color:var(--accent2)}
+.stat-val.orange{color:var(--orange)}
+
+.form-group{margin-bottom:1.25rem}
+.form-group label{display:block;font-size:0.82rem;font-weight:600;color:var(--muted);margin-bottom:0.4rem;text-transform:uppercase;letter-spacing:0.04em}
+.form-input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:0.7rem 1rem;color:var(--text);font-size:0.9rem;font-family:var(--mono);outline:none;transition:border .15s}
+.form-input:focus{border-color:var(--accent)}
+select.form-input{cursor:pointer}
+textarea.form-input{min-height:120px;resize:vertical;font-family:'Inter',sans-serif}
+.btn{display:inline-flex;align-items:center;gap:0.5rem;padding:0.7rem 1.5rem;border:none;border-radius:8px;font-size:0.9rem;font-weight:600;cursor:pointer;transition:all .15s}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:#5A4BD1}
+.btn-primary:disabled{opacity:0.5;cursor:not-allowed}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent2)}
+.btn-green{background:var(--green);color:#fff}
+.btn-green:hover{background:#00a884}
+.btn-red{background:var(--red);color:#fff}
+.btn-sm{padding:0.45rem 1rem;font-size:0.8rem}
+
+.steps{display:flex;gap:0;margin-bottom:2rem}
+.step{flex:1;text-align:center;padding:0.75rem 0.5rem;position:relative;font-size:0.8rem;font-weight:600;color:var(--muted)}
+.step::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:var(--border);border-radius:2px}
+.step.done::after{background:var(--green)}
+.step.active::after{background:var(--accent)}
+.step.done{color:var(--green)}
+.step.active{color:var(--accent2)}
+.step-num{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:var(--border);color:var(--muted);font-size:0.7rem;margin-bottom:0.3rem}
+.step.done .step-num{background:var(--green);color:#fff}
+.step.active .step-num{background:var(--accent);color:#fff}
+
+.terminal{background:#0D0D0D;border:1px solid #333;border-radius:8px;padding:1rem;font-family:var(--mono);font-size:0.8rem;color:#A8B2D1;max-height:300px;overflow-y:auto;line-height:1.6}
+.terminal .cmd{color:var(--green)}
+.terminal .err{color:var(--red)}
+.terminal .info{color:var(--accent2)}
+.terminal .warn{color:var(--orange)}
+
+.project{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem;margin-bottom:0.75rem;display:flex;align-items:center;gap:1rem}
+.project-status{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.project-status.running{background:var(--accent2);animation:pulse 1.5s infinite}
+.project-status.done{background:var(--green)}
+.project-status.error{background:var(--red)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.project-info{flex:1}
+.project-title{font-weight:600;font-size:0.9rem}
+.project-meta{font-size:0.75rem;color:var(--muted);margin-top:2px}
+.project-actions{display:flex;gap:0.5rem}
+
+.copy-wrap{position:relative;display:flex;align-items:center;gap:0.5rem}
+.copy-wrap code{flex:1;background:var(--surface);padding:0.5rem 0.75rem;border-radius:6px;font-family:var(--mono);font-size:0.82rem;border:1px solid var(--border);overflow-x:auto;white-space:nowrap}
+.copy-btn{background:var(--accent);color:#fff;border:none;padding:0.4rem 0.8rem;border-radius:6px;cursor:pointer;font-size:0.75rem;font-weight:600;white-space:nowrap}
+
+.section{display:none}
+.section.active{display:block}
+
+.badge{display:inline-block;padding:0.15rem 0.6rem;border-radius:100px;font-size:0.7rem;font-weight:600;font-family:var(--mono)}
+.badge-green{background:rgba(0,184,148,0.15);color:var(--green)}
+.badge-orange{background:rgba(253,203,110,0.15);color:var(--orange)}
+.badge-red{background:rgba(255,107,107,0.15);color:var(--red)}
+.badge-accent{background:rgba(108,92,231,0.15);color:var(--accent2)}
+
+.provider-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0.75rem;margin:1rem 0}
+.provider-opt{background:var(--surface);border:2px solid var(--border);border-radius:8px;padding:1rem;cursor:pointer;text-align:center;transition:all .15s}
+.provider-opt:hover{border-color:var(--accent)}
+.provider-opt.selected{border-color:var(--accent);background:rgba(108,92,231,0.08)}
+.provider-opt .p-name{font-weight:700;font-size:0.95rem;margin-bottom:2px}
+.provider-opt .p-desc{font-size:0.72rem;color:var(--muted)}
+
+/* Deploy options */
+.deploy-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0.75rem;margin:1rem 0}
+.deploy-opt{background:var(--surface);border:2px solid var(--border);border-radius:8px;padding:1.2rem 1rem;cursor:pointer;text-align:center;transition:all .15s}
+.deploy-opt:hover{border-color:var(--accent)}
+.deploy-opt.selected{border-color:var(--green);background:rgba(0,184,148,0.06)}
+.deploy-opt .d-icon{font-size:1.5rem;margin-bottom:0.4rem}
+.deploy-opt .d-name{font-weight:700;font-size:0.95rem;margin-bottom:2px}
+.deploy-opt .d-desc{font-size:0.72rem;color:var(--muted)}
+.deploy-opt .d-price{font-size:0.7rem;color:var(--green);margin-top:0.3rem;font-weight:600}
+
+/* Repo card */
+.repo-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem;margin-bottom:0.75rem;display:flex;align-items:center;gap:1rem}
+.repo-icon{font-size:1.5rem;flex-shrink:0}
+.repo-info{flex:1}
+.repo-name{font-weight:600;font-size:0.95rem;font-family:var(--mono)}
+.repo-meta{font-size:0.75rem;color:var(--muted);margin-top:2px}
+.repo-badge{font-size:0.7rem;display:inline-block;padding:0.1rem 0.5rem;border-radius:100px;margin-top:0.3rem}
+
+/* Tabs */
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:1.5rem}
+.tab{padding:0.7rem 1.5rem;font-size:0.88rem;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--accent2);border-bottom-color:var(--accent)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* One-click box */
+.oneclick-box{background:linear-gradient(135deg,rgba(108,92,231,0.12),rgba(0,184,148,0.08));border:1px solid var(--accent);border-radius:12px;padding:1.5rem;margin:1rem 0;text-align:center}
+.oneclick-box h4{font-size:1.1rem;margin-bottom:0.5rem;color:var(--accent2)}
+.oneclick-box p{color:var(--muted);font-size:0.85rem;margin-bottom:1rem}
+
+.toast{position:fixed;bottom:2rem;right:2rem;background:var(--green);color:#fff;padding:0.8rem 1.5rem;border-radius:8px;font-weight:600;font-size:0.88rem;z-index:999;animation:slideUp .3s;display:none}
+@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+.hint{font-size:0.78rem;color:var(--muted);margin-top:0.4rem}
+.inline-flex{display:flex;gap:0.5rem;align-items:center}
+.mt{margin-top:1rem}
+.mb{margin-bottom:1rem}
+
+@media(max-width:768px){.app{flex-direction:column}.sidebar{width:100%;flex-direction:row;overflow-x:auto;padding:0.5rem}.main{padding:1rem}.provider-grid,.deploy-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="logo">
+    <h1>AI Department</h1>
+    <span>v5.5 · 176 agents</span>
+  </div>
+  <div class="nav-item active" data-sec="dashboard" onclick="nav(this,'dashboard')"><span class="nav-icon">◉</span> Дашборд</div>
+  <div class="nav-item" data-sec="setup" onclick="nav(this,'setup')"><span class="nav-icon">⚙</span> Настройка</div>
+  <div class="nav-item" data-sec="repos" onclick="nav(this,'repos')"><span class="nav-icon">⑂</span> Репозитории</div>
+  <div class="nav-item" data-sec="create" onclick="nav(this,'create')"><span class="nav-icon">＋</span> Новый проект</div>
+  <div class="nav-item" data-sec="projects" onclick="nav(this,'projects')"><span class="nav-icon">☰</span> Проекты</div>
+  <div class="nav-item" data-sec="docs" onclick="nav(this,'docs')"><span class="nav-icon">◖</span> Документация</div>
+  <div class="nav-spacer"></div>
+  <div class="nav-status">
+    <span class="status-dot" id="statusDot"></span>
+    <span id="statusText">Не подключено</span>
+  </div>
+</aside>
+
+<!-- Main -->
+<main class="main">
+
+<!-- ============ DASHBOARD ============ -->
+<div class="section active" id="sec-dashboard">
+  <div class="page-header">
+    <h2>Добро пожаловать 👋</h2>
+    <p>Панель управления вашим AI Department</p>
+  </div>
+
+  <div class="card-grid">
+    <div class="stat"><div class="stat-val accent" id="d-agents">176</div><div class="stat-label">Агентов</div></div>
+    <div class="stat"><div class="stat-val green" id="d-completed">0</div><div class="stat-label">Завершено</div></div>
+    <div class="stat"><div class="stat-val orange" id="d-running">0</div><div class="stat-label">В работе</div></div>
+    <div class="stat"><div class="stat-val" id="d-cost" style="color:var(--text)">$0.00</div><div class="stat-label">Расход</div></div>
+    <div class="stat"><div class="stat-val accent" id="d-repos">0</div><div class="stat-label">Репозиториев</div></div>
+  </div>
+
+  <div class="card">
+    <h3>🚀 Быстрый старт</h3>
+    <div class="steps">
+      <div class="step" id="s1"><div class="step-num">1</div><br>Лицензия</div>
+      <div class="step" id="s2"><div class="step-num">2</div><br>LLM</div>
+      <div class="step" id="s3"><div class="step-num">3</div><br>Деплой</div>
+      <div class="step" id="s4"><div class="step-num">4</div><br>Первый проект</div>
+    </div>
+    <p style="color:var(--muted);font-size:0.88rem" id="quickstart-hint">Перейдите в <b>Настройка</b> чтобы начать.</p>
+  </div>
+
+  <div class="card">
+    <h3>📋 Последняя активность</h3>
+    <div id="activity-log" class="terminal" style="min-height:80px">
+      <div class="info">Ожидание подключения к серверу...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SETUP ============ -->
+<div class="section" id="sec-setup">
+  <div class="page-header">
+    <h2>Настройка</h2>
+    <p>Лицензия + LLM-провайдер + деплой за 2 минуты</p>
+  </div>
+
+  <!-- License -->
+  <div class="card" id="card-license">
+    <h3>🔑 Шаг 1 — Лицензионный ключ</h3>
+    <div class="inline-flex">
+      <input type="text" class="form-input" id="inp-license" placeholder="AIDPT-XXXXX-XXXXX-XXXXX-XXXXX" spellcheck="false" style="max-width:400px">
+      <button class="btn btn-primary btn-sm" onclick="validateLicense()">Активировать</button>
+      <span id="license-status"></span>
+    </div>
+    <p class="hint">Ключ из письма после оплаты. Тест: AIDPT-T5PPX-012CE-2KWYK-7CQHZ</p>
+  </div>
+
+  <!-- Provider -->
+  <div class="card" id="card-provider">
+    <h3>🧠 Шаг 2 — LLM Провайдер (ваш API-ключ)</h3>
+    <p style="color:var(--muted);font-size:0.85rem;margin-bottom:0.5rem">Агенты используют <b>ваш</b> ключ — мы не тратим ваш бюджет.</p>
+    <div class="provider-grid">
+      <div class="provider-opt" onclick="selectProvider('anthropic',this)">
+        <div class="p-name">Anthropic</div>
+        <div class="p-desc">Claude · лучшее качество</div>
+      </div>
+      <div class="provider-opt" onclick="selectProvider('openai',this)">
+        <div class="p-name">OpenAI</div>
+        <div class="p-desc">GPT-4o · универсальный</div>
+      </div>
+      <div class="provider-opt" onclick="selectProvider('openrouter',this)">
+        <div class="p-name">OpenRouter</div>
+        <div class="p-desc">100+ моделей · гибкий</div>
+      </div>
+    </div>
+    <div id="api-key-group" style="display:none">
+      <div class="inline-flex">
+        <input type="password" class="form-input" id="inp-apikey" placeholder="sk-..." spellcheck="false" style="max-width:450px">
+        <button class="btn btn-primary btn-sm" onclick="testProvider()" id="btn-test-provider">Проверить</button>
+        <span id="provider-status"></span>
+      </div>
+      <p class="hint" id="api-key-hint"></p>
+    </div>
+  </div>
+
+  <!-- Deploy -->
+  <div class="card" id="card-deploy">
+    <h3>🚀 Шаг 3 — Запуск</h3>
+    <p style="color:var(--muted);font-size:0.85rem;margin-bottom:0.5rem">Выберите способ запуска:</p>
+
+    <div class="deploy-grid">
+      <div class="deploy-opt" onclick="selectDeploy('oneclick',this)">
+        <div class="d-icon">⚡</div>
+        <div class="d-name">One-Click</div>
+        <div class="d-desc">Скопируйте одну команду</div>
+        <div class="d-price">Быстрее всего</div>
+      </div>
+      <div class="deploy-opt" onclick="selectDeploy('docker',this)">
+        <div class="d-icon">🐳</div>
+        <div class="d-name">Docker</div>
+        <div class="d-desc">docker compose up</div>
+        <div class="d-price">Свой сервер</div>
+      </div>
+      <div class="deploy-opt" onclick="selectDeploy('cloud',this)">
+        <div class="d-icon">☁</div>
+        <div class="d-name">Cloud</div>
+        <div class="d-desc">Railway / Render</div>
+        <div class="d-price">Без сервера</div>
+      </div>
+    </div>
+
+    <!-- One-Click Deploy -->
+    <div id="deploy-oneclick" class="tab-content">
+      <div class="oneclick-box">
+        <h4>⚡ Одна команда — полный запуск</h4>
+        <p>Заполните шаги 1 и 2 — команда сгенерируется автоматически</p>
+      </div>
+      <div class="form-group">
+        <label>Скопируйте и запустите:</label>
+        <div class="copy-wrap">
+          <code id="oneclick-cmd">Заполните шаги 1 и 2 выше</code>
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+        </div>
+        <p class="hint">Команда клонирует репо, создаст .env с вашими ключами и запустит все сервисы</p>
+      </div>
+    </div>
+
+    <!-- Docker Deploy -->
+    <div id="deploy-docker" class="tab-content">
+      <div class="form-group">
+        <label>1. Клонировать</label>
+        <div class="copy-wrap">
+          <code>git clone https://github.com/RusZab/depAI.git && cd depAI</code>
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>2. Создать .env</label>
+        <div class="copy-wrap">
+          <code id="env-cmd">Заполните шаги 1 и 2 выше</code>
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>3. Запустить</label>
+        <div class="copy-wrap">
+          <code>docker compose up -d</code>
+          <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cloud Deploy -->
+    <div id="deploy-cloud" class="tab-content">
+      <div class="form-group">
+        <label>Railway (рекомендуется)</label>
+        <div class="copy-wrap">
+          <code id="railway-link">https://railway.app/template/ai-department</code>
+          <button class="btn btn-primary btn-sm" onclick="window.open('https://railway.app/new/github?repo=RusZab/depAI')">Deploy on Railway</button>
+        </div>
+        <p class="hint">Нужен аккаунт Railway. Добавьте env-переменные (ваш ключ, лицензию) в настройках проекта.</p>
+      </div>
+      <div class="form-group mt">
+        <label>Render</label>
+        <div class="copy-wrap">
+          <code>https://render.com/deploy?repo=github.com/RusZab/depAI</code>
+          <button class="btn btn-outline btn-sm" onclick="window.open('https://render.com/deploy?repo=https://github.com/RusZab/depAI')">Deploy on Render</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Server connection -->
+    <div class="form-group mt" id="server-connect-block">
+      <label>Подключить кабинет к серверу</label>
+      <div class="inline-flex">
+        <input type="text" class="form-input" id="inp-server" placeholder="http://localhost:4000" value="http://localhost:4000" style="max-width:300px">
+        <button class="btn btn-green btn-sm" onclick="connectServer()">Подключить</button>
+        <span id="server-status"></span>
+      </div>
+      <p class="hint">IP-адрес или домен вашего сервера с AI Department</p>
+    </div>
+  </div>
+</div>
+
+<!-- ============ REPOSITORIES ============ -->
+<div class="section" id="sec-repos">
+  <div class="page-header">
+    <h2>Репозитории</h2>
+    <p>Подключите свои GitHub-репозитории — агенты будут работать с вашим кодом</p>
+  </div>
+
+  <!-- Add repo -->
+  <div class="card">
+    <h3>➕ Подключить репозиторий</h3>
+    <p style="color:var(--muted);font-size:0.85rem;margin-bottom:1rem">Укажите ссылку на GitHub-репозиторий. Агенты проанализируют структуру, стек, зависимости и смогут работать с вашим кодом.</p>
+
+    <div class="form-group">
+      <label>URL репозитория</label>
+      <div class="inline-flex">
+        <input type="text" class="form-input" id="inp-repo-url" placeholder="https://github.com/username/my-project" spellcheck="false" style="max-width:500px">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>GitHub Token (для приватных репо, опционально)</label>
+      <div class="inline-flex">
+        <input type="password" class="form-input" id="inp-gh-token" placeholder="ghp_..." spellcheck="false" style="max-width:500px">
+      </div>
+      <p class="hint">Только для приватных репозиториев. Создать: github.com/settings/tokens → Scopes: repo</p>
+    </div>
+
+    <div class="form-group">
+      <label>Ветка (опционально)</label>
+      <div class="inline-flex">
+        <input type="text" class="form-input" id="inp-repo-branch" placeholder="main" style="max-width:200px">
+      </div>
+    </div>
+
+    <button class="btn btn-primary" onclick="addRepo()">🔗 Подключить репозиторий</button>
+    <span id="repo-add-status" style="margin-left:1rem;font-size:0.85rem"></span>
+  </div>
+
+  <!-- Connected repos -->
+  <div class="card">
+    <h3>📂 Подключённые репозитории</h3>
+    <div id="repos-list">
+      <div style="text-align:center;color:var(--muted);padding:2rem;font-size:0.9rem">
+        Нет подключённых репозиториев. Добавьте свой первый проект выше.
+      </div>
+    </div>
+  </div>
+
+  <!-- What can agents do -->
+  <div class="card">
+    <h3>🤖 Что могут агенты с вашим репо?</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;font-size:0.88rem">
+      <div style="padding:0.6rem;background:var(--surface);border-radius:8px"><span style="color:var(--green)">✓</span> Добавить новые фичи</div>
+      <div style="padding:0.6rem;background:var(--surface);border-radius:8px"><span style="color:var(--green)">✓</span> Найти и исправить баги</div>
+      <div style="padding:0.6rem;background:var(--surface);border-radius:8px"><span style="color:var(--green)">✓</span> Написать тесты</div>
+      <div style="padding:0.6rem;background:var(--surface);border-radius:8px"><span style="color:var(--green)">✓</span> Рефакторинг</div>
+      <div style="padding:0.6rem;background:var(--surface);border-radius:8px"><span style="color:var(--green)">✓</span> Code review</div>
+      <div style="padding:0.6rem;background:var(--surface);border-radius:8px"><span style="color:var(--green)">✓</span> Документация</div>
+      <div style="padding:0.6rem;background:var(--surface);border-radius:8px"><span style="color:var(--green)">✓</span> Миграция на новый стек</div>
+      <div style="padding:0.6rem;background:var(--surface);border-radius:8px"><span style="color:var(--green)">✓</span> CI/CD настройка</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ CREATE PROJECT ============ -->
+<div class="section" id="sec-create">
+  <div class="page-header">
+    <h2>Новый проект</h2>
+    <p>Опишите что нужно — 176 агентов сделают остальное</p>
+  </div>
+
+  <!-- Tabs: new / from repo -->
+  <div class="tabs">
+    <div class="tab active" onclick="showCreateTab('new',this)">🏗 Создать с нуля</div>
+    <div class="tab" onclick="showCreateTab('fromrepo',this)">⑂ Доработать репозиторий</div>
+  </div>
+
+  <!-- New project -->
+  <div class="tab-content active" id="create-new">
+    <div class="card">
+      <div class="form-group">
+        <label>Что нужно создать?</label>
+        <textarea class="form-input" id="inp-task" placeholder="Например: Создай REST API для Todo приложения на Express + TypeScript с CRUD эндпоинтами, JWT авторизацией, валидацией и тестами"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Категория</label>
+        <select class="form-input" id="inp-category" style="max-width:250px">
+          <option value="build">🏗 Создать (build)</option>
+          <option value="fix">🔧 Исправить (fix)</option>
+          <option value="refactor">♻ Рефакторинг</option>
+          <option value="test">🧪 Тесты</option>
+          <option value="docs">📝 Документация</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" onclick="submitTask()" id="btn-submit">
+        🚀 Запустить 176 агентов
+      </button>
+    </div>
+  </div>
+
+  <!-- From repo -->
+  <div class="tab-content" id="create-fromrepo">
+    <div class="card">
+      <div class="form-group">
+        <label>Репозиторий</label>
+        <select class="form-input" id="inp-target-repo" style="max-width:400px">
+          <option value="">— Выберите подключённый репо —</option>
+        </select>
+        <p class="hint">Нет репозиториев? <a href="#" onclick="nav(document.querySelector('[data-sec=repos]'),'repos');return false" style="color:var(--accent2)">Подключите в разделе Репозитории</a></p>
+      </div>
+      <div class="form-group">
+        <label>Что нужно сделать с этим репозиторием?</label>
+        <textarea class="form-input" id="inp-repo-task" placeholder="Например: Добавь авторизацию через JWT — регистрация, логин, middleware для защищённых роутов. Напиши тесты."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Категория</label>
+        <select class="form-input" id="inp-repo-category" style="max-width:250px">
+          <option value="build">🏗 Добавить фичу</option>
+          <option value="fix">🔧 Исправить баг</option>
+          <option value="refactor">♻ Рефакторинг</option>
+          <option value="test">🧪 Написать тесты</option>
+          <option value="review">🔍 Code Review</option>
+          <option value="docs">📝 Документация</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" onclick="submitRepoTask()" id="btn-submit-repo">
+        🚀 Запустить на репозитории
+      </button>
+    </div>
+  </div>
+
+  <!-- Progress -->
+  <div class="card" id="progress-card" style="display:none">
+    <h3>⚡ Выполнение</h3>
+    <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem">
+      <div style="flex:1;background:var(--surface);border-radius:100px;height:8px;overflow:hidden">
+        <div id="progress-bar" style="width:0%;height:100%;background:var(--accent);border-radius:100px;transition:width .5s"></div>
+      </div>
+      <span id="progress-pct" style="font-family:var(--mono);font-size:0.85rem;color:var(--accent2)">0%</span>
+    </div>
+    <div id="task-log" class="terminal"></div>
+  </div>
+</div>
+
+<!-- ============ PROJECTS ============ -->
+<div class="section" id="sec-projects">
+  <div class="page-header">
+    <h2>Проекты</h2>
+    <p>История запусков и результаты</p>
+  </div>
+  <div id="projects-list">
+    <div class="card" style="text-align:center;color:var(--muted);padding:3rem">
+      Нет проектов. Создайте первый в разделе <b>Новый проект</b>.
+    </div>
+  </div>
+</div>
+
+<!-- ============ DOCS ============ -->
+<div class="section" id="sec-docs">
+  <div class="page-header">
+    <h2>Документация</h2>
+    <p>Быстрый справочник</p>
+  </div>
+
+  <div class="card">
+    <h3>📡 API Endpoints</h3>
+    <table style="width:100%;font-size:0.85rem;border-collapse:collapse">
+      <tr style="border-bottom:1px solid var(--border)"><td style="padding:0.5rem 0;color:var(--muted);width:80px">POST</td><td style="font-family:var(--mono)">/execute</td><td style="color:var(--muted)">Запустить задачу</td></tr>
+      <tr style="border-bottom:1px solid var(--border)"><td style="padding:0.5rem 0;color:var(--muted)">POST</td><td style="font-family:var(--mono)">/execute</td><td style="color:var(--muted)">+ repoUrl — задача на репозитории</td></tr>
+      <tr style="border-bottom:1px solid var(--border)"><td style="padding:0.5rem 0;color:var(--muted)">GET</td><td style="font-family:var(--mono)">/status</td><td style="color:var(--muted)">Статус системы</td></tr>
+      <tr style="border-bottom:1px solid var(--border)"><td style="padding:0.5rem 0;color:var(--muted)">GET</td><td style="font-family:var(--mono)">/health</td><td style="color:var(--muted)">Проверка здоровья</td></tr>
+      <tr style="border-bottom:1px solid var(--border)"><td style="padding:0.5rem 0;color:var(--muted)">GET</td><td style="font-family:var(--mono)">/hitl/pending</td><td style="color:var(--muted)">HITL-проверки</td></tr>
+      <tr><td style="padding:0.5rem 0;color:var(--muted)">GET</td><td style="font-family:var(--mono)">/cost</td><td style="color:var(--muted)">Расходы</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h3>🤖 Агенты (5 уровней)</h3>
+    <table style="width:100%;font-size:0.85rem;border-collapse:collapse">
+      <tr style="border-bottom:1px solid var(--border)"><td style="padding:0.5rem 0"><span class="badge badge-accent">Tier 1</span></td><td>CTO, CPO</td><td style="color:var(--muted)">Стратегия, архитектура</td></tr>
+      <tr style="border-bottom:1px solid var(--border)"><td style="padding:0.5rem 0"><span class="badge badge-accent">Tier 2</span></td><td>Backend/Frontend/QA/DevOps/Security</td><td style="color:var(--muted)">Координация</td></tr>
+      <tr style="border-bottom:1px solid var(--border)"><td style="padding:0.5rem 0"><span class="badge badge-green">Tier 3</span></td><td>Sr. Developers, DB Engineer</td><td style="color:var(--muted)">Код, тесты</td></tr>
+      <tr style="border-bottom:1px solid var(--border)"><td style="padding:0.5rem 0"><span class="badge badge-green">Tier 4</span></td><td>Developers, QA Engineers</td><td style="color:var(--muted)">Имплементация</td></tr>
+      <tr><td style="padding:0.5rem 0"><span class="badge badge-orange">Tier 5</span></td><td>Jr. Developers, Interns</td><td style="color:var(--muted)">Поддержка</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h3>🔧 Порты</h3>
+    <table style="width:100%;font-size:0.85rem;border-collapse:collapse">
+      <tr style="border-bottom:1px solid var(--border)"><td style="padding:0.5rem 0;font-family:var(--mono)">:4000</td><td>Orchestrator</td></tr>
+      <tr style="border-bottom:1px solid var(--border)"><td style="padding:0.5rem 0;font-family:var(--mono)">:4001</td><td>Router</td></tr>
+      <tr style="border-bottom:1px solid var(--border)"><td style="padding:0.5rem 0;font-family:var(--mono)">:4002</td><td>Dashboard + Metrics</td></tr>
+      <tr style="border-bottom:1px solid var(--border)"><td style="padding:0.5rem 0;font-family:var(--mono)">:3000</td><td>Grafana (admin/admin)</td></tr>
+      <tr><td style="padding:0.5rem 0;font-family:var(--mono)">:9090</td><td>Prometheus</td></tr>
+    </table>
+  </div>
+</div>
+
+</main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== STATE =====
+const S = {
+  licenseValid: false,
+  provider: null,
+  apiKey: '',
+  serverUrl: 'http://localhost:4000',
+  connected: false,
+  repos: JSON.parse(localStorage.getItem('aid-repos') || '[]'),
+  projects: JSON.parse(localStorage.getItem('aid-projects') || '[]')
+};
+
+// ===== NAVIGATION =====
+function nav(el, name) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('sec-' + name).classList.add('active');
+  el.classList.add('active');
+}
+
+function showCreateTab(tab, el) {
+  document.querySelectorAll('#sec-create .tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('#sec-create .tab-content').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('create-' + tab).classList.add('active');
+}
+
+// ===== TOAST =====
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', 3000);
+}
+
+// ===== COPY =====
+function copyCmd(btn) {
+  const code = btn.closest('.copy-wrap').querySelector('code');
+  navigator.clipboard.writeText(code.textContent).then(() => {
+    const old = btn.textContent;
+    btn.textContent = '✓ Copied';
+    setTimeout(() => btn.textContent = old, 1500);
+  });
+}
+
+// ===== LICENSE =====
+function validateLicense() {
+  const key = document.getElementById('inp-license').value.trim();
+  const el = document.getElementById('license-status');
+  if (/^AIDPT-[A-Z0-9]{5}-[A-Z0-9]{5}-[A-Z0-9]{5}-[A-Z0-9]{5}$/.test(key)) {
+    S.licenseValid = true;
+    el.innerHTML = '<span class="badge badge-green">✓ Активирована</span>';
+    updateAll();
+    toast('Лицензия активирована');
+  } else {
+    el.innerHTML = '<span class="badge badge-red">✗ Неверный формат</span>';
+  }
+}
+
+// ===== PROVIDER =====
+function selectProvider(p, el) {
+  S.provider = p;
+  document.querySelectorAll('.provider-opt').forEach(e => e.classList.remove('selected'));
+  el.classList.add('selected');
+  const group = document.getElementById('api-key-group');
+  const inp = document.getElementById('inp-apikey');
+  const hint = document.getElementById('api-key-hint');
+  group.style.display = 'block';
+
+  if (p === 'anthropic') {
+    inp.placeholder = 'sk-ant-api03-...';
+    hint.textContent = 'Получить: console.anthropic.com/settings/keys';
+  } else if (p === 'openai') {
+    inp.placeholder = 'sk-proj-...';
+    hint.textContent = 'Получить: platform.openai.com/api-keys';
+  } else {
+    inp.placeholder = 'sk-or-v1-...';
+    hint.textContent = 'Получить: openrouter.ai/settings/keys (нужен баланс)';
+  }
+  updateAll();
+}
+
+async function testProvider() {
+  const key = document.getElementById('inp-apikey').value.trim();
+  const el = document.getElementById('provider-status');
+  if (!key) { el.innerHTML = '<span class="badge badge-red">Введите ключ</span>'; return; }
+
+  // Validate key format first
+  const formats = {
+    anthropic: { pattern: /^sk-ant-/, name: 'sk-ant-...' },
+    openai: { pattern: /^sk-/, name: 'sk-...' },
+    openrouter: { pattern: /^sk-or-/, name: 'sk-or-...' }
+  };
+  const fmt = formats[S.provider];
+  if (fmt && !fmt.pattern.test(key)) {
+    el.innerHTML = '<span class="badge badge-red">✗ Ожидается формат ' + fmt.name + '</span>';
+    return;
+  }
+
+  S.apiKey = key;
+  el.innerHTML = '<span class="badge badge-orange">Проверка...</span>';
+
+  // Try direct API test (works for OpenRouter, may fail CORS for others)
+  try {
+    let url, headers, body;
+    if (S.provider === 'anthropic') {
+      // Anthropic blocks CORS from browsers — validate format + test via models endpoint
+      url = 'https://api.anthropic.com/v1/models';
+      headers = { 'x-api-key': key, 'anthropic-version': '2023-06-01' };
+      body = null;
+    } else if (S.provider === 'openai') {
+      // OpenAI models endpoint supports GET with auth
+      url = 'https://api.openai.com/v1/models';
+      headers = { 'Authorization': 'Bearer ' + key };
+      body = null;
+    } else {
+      // OpenRouter supports CORS
+      url = 'https://openrouter.ai/api/v1/models';
+      headers = { 'Authorization': 'Bearer ' + key };
+      body = null;
+    }
+
+    const resp = await fetch(url, {
+      method: body ? 'POST' : 'GET',
+      headers,
+      ...(body ? { body } : {}),
+      signal: AbortSignal.timeout(8000)
+    });
+
+    if (resp.ok) {
+      el.innerHTML = '<span class="badge badge-green">✓ Ключ валиден</span>';
+      updateAll();
+      toast('API-ключ подтверждён');
+      return;
+    }
+
+    // Check for auth errors (key is wrong)
+    if (resp.status === 401 || resp.status === 403) {
+      const err = await resp.json().catch(() => ({}));
+      el.innerHTML = '<span class="badge badge-red">✗ Неверный ключ: ' + (err.error?.message || resp.status) + '</span>';
+      return;
+    }
+
+    // Other status — key format is ok, API just returned non-200
+    el.innerHTML = '<span class="badge badge-green">✓ Формат верный</span>';
+    updateAll();
+    toast('Ключ сохранён');
+
+  } catch (e) {
+    // CORS error or network error — this is expected for Anthropic/OpenAI from browser
+    // If key format passed validation above, accept it
+    if (fmt && fmt.pattern.test(key)) {
+      el.innerHTML = '<span class="badge badge-green">✓ Формат верный (полная проверка при подключении сервера)</span>';
+      updateAll();
+      toast('Ключ сохранён — полная проверка при запуске сервера');
+    } else {
+      el.innerHTML = '<span class="badge badge-red">✗ ' + e.message + '</span>';
+    }
+  }
+}
+
+// ===== DEPLOY =====
+function selectDeploy(type, el) {
+  document.querySelectorAll('.deploy-opt').forEach(e => e.classList.remove('selected'));
+  el.classList.add('selected');
+  document.querySelectorAll('#card-deploy .tab-content').forEach(t => t.classList.remove('active'));
+  document.getElementById('deploy-' + type).classList.add('active');
+}
+
+// ===== GENERATE COMMANDS =====
+function updateAll() {
+  const license = document.getElementById('inp-license').value.trim() || 'YOUR_LICENSE';
+  const apiKey = document.getElementById('inp-apikey').value.trim() || 'YOUR_API_KEY';
+
+  let envLines = [];
+  envLines.push('LICENSE_KEY=' + license);
+  envLines.push('API_KEY=my-secret-key');
+  envLines.push('LOG_LEVEL=info');
+  envLines.push('CORS_ORIGINS=*');
+  envLines.push('AGENT_MAX_TOKENS=8192');
+  envLines.push('DEFAULT_REQUEST_BUDGET=2.0');
+  envLines.push('ROUTER_BUDGET_DAILY=50');
+
+  if (S.provider === 'anthropic') {
+    envLines.push('ANTHROPIC_API_KEY=' + apiKey);
+    envLines.push('ANTHROPIC_ENABLED=true');
+    envLines.push('OPENAI_ENABLED=false');
+  } else if (S.provider === 'openai') {
+    envLines.push('OPENAI_API_KEY=' + apiKey);
+    envLines.push('OPENAI_ENABLED=true');
+    envLines.push('ANTHROPIC_ENABLED=false');
+  } else if (S.provider === 'openrouter') {
+    envLines.push('OPENAI_API_KEY=' + apiKey);
+    envLines.push('OPENAI_BASE_URL=https://openrouter.ai/api/v1');
+    envLines.push('OPENAI_ENABLED=true');
+    envLines.push('OPENAI_MODEL=google/gemini-2.0-flash-001');
+    envLines.push('ANTHROPIC_ENABLED=false');
+  }
+
+  // One-click command
+  const oc = document.getElementById('oneclick-cmd');
+  const ec = document.getElementById('env-cmd');
+  if (S.provider) {
+    const envStr = envLines.join('\\n');
+    oc.textContent = `git clone https://github.com/RusZab/depAI.git && cd depAI && printf '${envStr}\\n' > .env && docker compose up -d`;
+    ec.textContent = `printf '${envStr}\\n' > .env`;
+  } else {
+    oc.textContent = 'Заполните шаги 1 и 2 выше';
+    ec.textContent = 'Заполните шаги 1 и 2 выше';
+  }
+
+  // Steps
+  const s1 = document.getElementById('s1');
+  const s2 = document.getElementById('s2');
+  const s3 = document.getElementById('s3');
+  const s4 = document.getElementById('s4');
+
+  s1.className = S.licenseValid ? 'step done' : 'step active';
+  s2.className = S.apiKey ? 'step done' : (S.licenseValid ? 'step active' : 'step');
+  s3.className = S.connected ? 'step done' : (S.apiKey ? 'step active' : 'step');
+  s4.className = S.connected ? 'step active' : 'step';
+
+  if (S.connected) {
+    document.getElementById('quickstart-hint').innerHTML = '✅ Всё готово! Перейдите в <b>Новый проект</b> или <b>Репозитории</b>.';
+  }
+
+  // Dashboard repos count
+  document.getElementById('d-repos').textContent = S.repos.length;
+
+  // Update repo selector in create tab
+  updateRepoSelector();
+}
+
+// ===== SERVER =====
+async function connectServer() {
+  const url = document.getElementById('inp-server').value.trim();
+  const el = document.getElementById('server-status');
+  el.innerHTML = '<span class="badge badge-orange">Подключение...</span>';
+
+  try {
+    const resp = await fetch(url + '/health', { signal: AbortSignal.timeout(5000) });
+    const data = await resp.json();
+    if (data.status === 'ok') {
+      S.serverUrl = url;
+      S.connected = true;
+      el.innerHTML = '<span class="badge badge-green">✓ Подключено</span>';
+      document.getElementById('statusDot').className = 'status-dot on';
+      document.getElementById('statusText').textContent = 'Подключено';
+      updateAll();
+      refreshDashboard();
+      toast('Сервер подключён');
+    }
+  } catch (e) {
+    S.connected = false;
+    el.innerHTML = '<span class="badge badge-red">✗ Недоступен — запустите сервер</span>';
+    document.getElementById('statusDot').className = 'status-dot off';
+    document.getElementById('statusText').textContent = 'Не подключено';
+  }
+}
+
+async function refreshDashboard() {
+  if (!S.connected) return;
+  try {
+    const resp = await fetch(S.serverUrl.replace(':4000', ':4002') + '/api/summary');
+    const d = (await resp.json()).data;
+    document.getElementById('d-agents').textContent = d.totalAgents;
+    document.getElementById('d-completed').textContent = d.tasksCompleted;
+    document.getElementById('d-running').textContent = d.tasksInProgress;
+    document.getElementById('d-cost').textContent = '$' + d.totalCostUsd.toFixed(2);
+  } catch (e) {}
+}
+
+// ===== REPOS =====
+function addRepo() {
+  const url = document.getElementById('inp-repo-url').value.trim();
+  const token = document.getElementById('inp-gh-token').value.trim();
+  const branch = document.getElementById('inp-repo-branch').value.trim() || 'main';
+  const el = document.getElementById('repo-add-status');
+
+  if (!url) { el.innerHTML = '<span class="badge badge-red">Введите URL</span>'; return; }
+
+  // Parse GitHub URL
+  const match = url.match(/github\.com\/([^\/]+)\/([^\/\.\s]+)/);
+  if (!match) { el.innerHTML = '<span class="badge badge-red">Неверный GitHub URL</span>'; return; }
+
+  const owner = match[1];
+  const name = match[2];
+
+  el.innerHTML = '<span class="badge badge-orange">Анализ репозитория...</span>';
+
+  // Fetch repo info from GitHub API
+  const headers = token ? { 'Authorization': 'token ' + token } : {};
+  fetch('https://api.github.com/repos/' + owner + '/' + name, { headers })
+    .then(r => {
+      if (!r.ok) throw new Error(r.status === 404 ? 'Не найден (приватный? добавьте token)' : 'Ошибка ' + r.status);
+      return r.json();
+    })
+    .then(data => {
+      const repo = {
+        id: Date.now().toString(36),
+        owner,
+        name,
+        fullName: owner + '/' + name,
+        url,
+        branch,
+        token: token ? '***' : '',
+        hasToken: !!token,
+        language: data.language || 'Unknown',
+        description: data.description || '',
+        stars: data.stargazers_count || 0,
+        size: data.size || 0,
+        defaultBranch: data.default_branch,
+        addedAt: new Date().toISOString(),
+        scanned: false
+      };
+
+      // Fetch languages
+      return fetch('https://api.github.com/repos/' + owner + '/' + name + '/languages', { headers })
+        .then(r => r.json())
+        .then(langs => {
+          repo.languages = Object.keys(langs).join(', ') || repo.language;
+          repo.scanned = true;
+
+          S.repos.push(repo);
+          localStorage.setItem('aid-repos', JSON.stringify(S.repos));
+
+          el.innerHTML = '<span class="badge badge-green">✓ Подключён</span>';
+          renderRepos();
+          updateAll();
+          toast(repo.fullName + ' подключён');
+
+          // Clear inputs
+          document.getElementById('inp-repo-url').value = '';
+          document.getElementById('inp-gh-token').value = '';
+          document.getElementById('inp-repo-branch').value = '';
+        });
+    })
+    .catch(e => {
+      el.innerHTML = '<span class="badge badge-red">✗ ' + e.message + '</span>';
+    });
+}
+
+function removeRepo(id) {
+  S.repos = S.repos.filter(r => r.id !== id);
+  localStorage.setItem('aid-repos', JSON.stringify(S.repos));
+  renderRepos();
+  updateAll();
+  toast('Репозиторий отключён');
+}
+
+function renderRepos() {
+  const el = document.getElementById('repos-list');
+  if (S.repos.length === 0) {
+    el.innerHTML = '<div style="text-align:center;color:var(--muted);padding:2rem;font-size:0.9rem">Нет подключённых репозиториев.</div>';
+    return;
+  }
+  el.innerHTML = S.repos.map(r => `
+    <div class="repo-card">
+      <div class="repo-icon">📦</div>
+      <div class="repo-info">
+        <div class="repo-name">${r.fullName}</div>
+        <div class="repo-meta">${r.languages || r.language} · ветка: ${r.branch} · ${Math.round(r.size/1024)}MB</div>
+        <div>
+          <span class="badge badge-green repo-badge">✓ Подключён</span>
+          ${r.hasToken ? '<span class="badge badge-accent repo-badge" style="margin-left:4px">Приватный</span>' : ''}
+          ${r.description ? '<span style="font-size:0.78rem;color:var(--muted);margin-left:8px">' + r.description.substring(0, 60) + '</span>' : ''}
+        </div>
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="scanRepo('${r.id}')">🔍 Сканировать</button>
+      <button class="btn btn-sm" style="background:var(--red);color:#fff" onclick="removeRepo('${r.id}')">✗</button>
+    </div>
+  `).join('');
+}
+
+async function scanRepo(id) {
+  const repo = S.repos.find(r => r.id === id);
+  if (!repo || !S.connected) {
+    toast(S.connected ? 'Репозиторий не найден' : 'Сначала подключите сервер');
+    return;
+  }
+
+  toast('Сканирование ' + repo.fullName + '...');
+
+  try {
+    const resp = await fetch(S.serverUrl + '/execute', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ai-dept-production-key-2026' },
+      body: JSON.stringify({
+        userRequest: 'Проанализируй структуру репозитория ' + repo.url + ' — определи стек, архитектуру, зависимости, точки входа, тесты.',
+        category: 'review',
+        repoUrl: repo.url,
+        repoBranch: repo.branch
+      })
+    });
+    const data = await resp.json();
+    toast('Сканирование запущено: ' + (data.sessionId || 'ok'));
+  } catch (e) {
+    toast('Ошибка: ' + e.message);
+  }
+}
+
+function updateRepoSelector() {
+  const sel = document.getElementById('inp-target-repo');
+  const current = sel.value;
+  sel.innerHTML = '<option value="">— Выберите репозиторий —</option>';
+  S.repos.forEach(r => {
+    sel.innerHTML += '<option value="' + r.id + '">' + r.fullName + ' (' + r.languages + ')</option>';
+  });
+  if (current) sel.value = current;
+}
+
+// ===== TASKS =====
+async function submitTask() {
+  if (!S.connected) { toast('Подключитесь к серверу (Настройка → Шаг 3)'); return; }
+  const task = document.getElementById('inp-task').value.trim();
+  if (!task) { toast('Опишите задачу'); return; }
+  await runTask(task, document.getElementById('inp-category').value, null);
+}
+
+async function submitRepoTask() {
+  if (!S.connected) { toast('Подключитесь к серверу (Настройка → Шаг 3)'); return; }
+  const repoId = document.getElementById('inp-target-repo').value;
+  const task = document.getElementById('inp-repo-task').value.trim();
+  if (!repoId) { toast('Выберите репозиторий'); return; }
+  if (!task) { toast('Опишите задачу'); return; }
+
+  const repo = S.repos.find(r => r.id === repoId);
+  await runTask(task, document.getElementById('inp-repo-category').value, repo);
+}
+
+async function runTask(task, category, repo) {
+  const btn = repo ? document.getElementById('btn-submit-repo') : document.getElementById('btn-submit');
+  const progressCard = document.getElementById('progress-card');
+  const taskLog = document.getElementById('task-log');
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Агенты работают...';
+  progressCard.style.display = 'block';
+  taskLog.innerHTML = '<div class="info">[' + time() + '] Запуск задачи...</div>';
+  if (repo) taskLog.innerHTML += '<div class="info">[' + time() + '] Репозиторий: ' + repo.fullName + '</div>';
+
+  try {
+    const body = { userRequest: task, category };
+    if (repo) {
+      body.repoUrl = repo.url;
+      body.repoBranch = repo.branch;
+    }
+
+    const resp = await fetch(S.serverUrl + '/execute', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ai-dept-production-key-2026' },
+      body: JSON.stringify(body)
+    });
+
+    const data = await resp.json();
+    if (data.sessionId) {
+      taskLog.innerHTML += '<div class="cmd">[' + time() + '] Session: ' + data.sessionId + '</div>';
+      if (data.budgetUsd) taskLog.innerHTML += '<div class="info">[' + time() + '] Бюджет: $' + data.budgetUsd + '</div>';
+
+      // Save project
+      const proj = {
+        id: data.sessionId,
+        task: task.substring(0, 80),
+        category,
+        repo: repo ? repo.fullName : null,
+        startedAt: new Date().toISOString(),
+        status: 'running'
+      };
+      S.projects.unshift(proj);
+      localStorage.setItem('aid-projects', JSON.stringify(S.projects));
+
+      pollSession(data.sessionId, taskLog, btn, repo);
+    } else {
+      taskLog.innerHTML += '<div class="err">Ошибка: ' + JSON.stringify(data) + '</div>';
+      btn.disabled = false;
+      btn.textContent = '🚀 ' + (repo ? 'Запустить на репозитории' : 'Запустить 176 агентов');
+    }
+  } catch (e) {
+    taskLog.innerHTML += '<div class="err">Ошибка: ' + e.message + '</div>';
+    btn.disabled = false;
+    btn.textContent = '🚀 ' + (repo ? 'Запустить на репозитории' : 'Запустить 176 агентов');
+  }
+}
+
+function pollSession(sid, logEl, btn, repo) {
+  const bar = document.getElementById('progress-bar');
+  const pct = document.getElementById('progress-pct');
+  let attempts = 0;
+
+  const poll = setInterval(async () => {
+    attempts++;
+    try {
+      const resp = await fetch(S.serverUrl.replace(':4000', ':4002') + '/api/tasks');
+      const tasks = (await resp.json()).data || [];
+
+      const total = tasks.length || 1;
+      const done = tasks.filter(t => t.status === 'completed').length;
+      const failed = tasks.filter(t => t.status === 'failed').length;
+      const running = tasks.filter(t => t.status === 'in_progress').length;
+
+      const progress = Math.round(((done + failed) / total) * 100);
+      bar.style.width = progress + '%';
+      pct.textContent = progress + '%';
+
+      logEl.innerHTML = '';
+      tasks.forEach(t => {
+        const cls = t.status === 'completed' ? 'cmd' : t.status === 'failed' ? 'err' : 'info';
+        const icon = t.status === 'completed' ? '✓' : t.status === 'failed' ? '✗' : '◉';
+        logEl.innerHTML += '<div class="' + cls + '">' + icon + ' [' + t.status + '] ' + (t.title || t.id).substring(0, 80) + '</div>';
+      });
+
+      if (running === 0 && (done > 0 || failed > 0 || attempts > 60)) {
+        clearInterval(poll);
+        btn.disabled = false;
+        btn.textContent = '🚀 ' + (repo ? 'Запустить на репозитории' : 'Запустить 176 агентов');
+
+        // Update project status
+        const proj = S.projects.find(p => p.id === sid);
+        if (proj) { proj.status = failed > 0 ? 'partial' : 'done'; proj.finishedAt = new Date().toISOString(); }
+        localStorage.setItem('aid-projects', JSON.stringify(S.projects));
+
+        if (done > 0) {
+          logEl.innerHTML += '<div class="cmd" style="margin-top:0.5rem">═══ Готово! ' + done + '/' + total + ' задач выполнено ═══</div>';
+          toast('Проект завершён!');
+        }
+        refreshDashboard();
+      }
+    } catch (e) {}
+  }, 3000);
+}
+
+function time() { return new Date().toLocaleTimeString(); }
+
+// ===== INIT =====
+// Auto-fill license from URL
+const params = new URLSearchParams(window.location.search);
+const licenseParam = params.get('license') || params.get('key');
+if (licenseParam) {
+  document.getElementById('inp-license').value = licenseParam;
+  validateLicense();
+}
+
+// Auto-navigate to setup if welcome
+const plan = params.get('welcome');
+if (plan) {
+  setTimeout(() => {
+    nav(document.querySelector('[data-sec="setup"]'), 'setup');
+  }, 500);
+}
+
+// Render repos
+renderRepos();
+updateAll();
+
+// Auto-refresh
+setInterval(refreshDashboard, 10000);
+</script>
+
+</body>
+</html>
