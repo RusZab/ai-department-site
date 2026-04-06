@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Department — 176 Agents Build Your Software</title>
+<meta name="description" content="Turn text descriptions into production-ready code. 176 AI agents, 7 languages, full development pipeline. Self-hosted, your API keys, your infrastructure.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --cream:#FAF7F2;
+  --ink:#1A1714;
+  --terra:#C4513A;
+  --terra-dark:#A3402E;
+  --warm:#F0EAE0;
+  --mid:#8C8478;
+  --border:#E2DCD4;
+  --green:#2D6A4F;
+  --green-light:#F0F7F4;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;color:var(--ink);background:var(--cream);line-height:1.6;-webkit-font-smoothing:antialiased}
+
+/* ── LANG TOGGLE ─────────────────────── */
+[data-lang="ru"]{display:none}
+html.ru [data-lang="ru"]{display:revert}
+html.ru [data-lang="en"]{display:none}
+
+/* ── LANG SWITCH ─────────────────────── */
+.lang-sw{display:flex;gap:0;border:1.5px solid var(--border);border-radius:6px;overflow:hidden;height:32px;margin-left:0.5rem}
+.lang-sw button{background:none;border:none;font-family:'JetBrains Mono',monospace;font-size:0.7rem;font-weight:600;letter-spacing:0.04em;padding:0 0.75rem;color:var(--mid);cursor:pointer;transition:all 0.15s}
+.lang-sw button.active{background:var(--ink);color:var(--cream)}
+
+/* ── NAV ─────────────────────────────── */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(250,247,242,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 2rem;height:64px;display:flex;align-items:center;justify-content:space-between}
+.nav-logo{font-family:'DM Serif Display',serif;font-size:1.25rem;color:var(--ink);text-decoration:none}
+.nav-logo span{color:var(--terra)}
+.nav-right{display:flex;gap:1.75rem;align-items:center}
+.nav-right a{text-decoration:none;color:var(--mid);font-size:0.85rem;font-weight:500;transition:color 0.15s}
+.nav-right a:hover{color:var(--ink)}
+.nav-cta{background:var(--terra)!important;color:#fff!important;padding:0.45rem 1.1rem;border-radius:6px;font-weight:600!important;transition:background 0.15s}
+.nav-cta:hover{background:var(--terra-dark)!important}
+
+/* ── HERO ─────────────────────────────── */
+.hero{padding:7.5rem 2rem 4.5rem;max-width:920px;margin:0 auto;text-align:center}
+.hero-tag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:0.72rem;font-weight:500;color:var(--terra);background:rgba(196,81,58,0.07);border:1px solid rgba(196,81,58,0.18);padding:0.3rem 0.9rem;border-radius:100px;margin-bottom:2rem;letter-spacing:0.06em}
+.hero h1{font-family:'DM Serif Display',serif;font-size:clamp(2.4rem,5vw,3.8rem);line-height:1.08;margin-bottom:1.5rem;letter-spacing:-0.025em}
+.hero h1 em{font-style:italic;color:var(--terra)}
+.hero-sub{font-size:1.1rem;color:var(--mid);max-width:620px;margin:0 auto 2.5rem;line-height:1.75}
+.hero-btns{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:0.5rem;padding:0.85rem 2rem;border-radius:8px;font-size:0.95rem;font-weight:600;text-decoration:none;transition:all 0.15s;cursor:pointer;border:none}
+.btn-p{background:var(--terra);color:#fff}
+.btn-p:hover{background:var(--terra-dark);transform:translateY(-1px);box-shadow:0 6px 16px rgba(196,81,58,0.25)}
+.btn-s{background:none;color:var(--ink);border:2px solid var(--border)}
+.btn-s:hover{border-color:var(--ink)}
+.hero-nums{margin-top:3rem;display:flex;justify-content:center;gap:3rem;flex-wrap:wrap}
+.hero-nums dt{font-family:'DM Serif Display',serif;font-size:2rem;color:var(--ink)}
+.hero-nums dd{font-size:0.78rem;color:var(--mid);margin-top:0.2rem}
+
+/* ── TERMINAL ─────────────────────────── */
+.term-wrap{padding:2.5rem 2rem 5rem;max-width:720px;margin:0 auto}
+.term{background:#1A1714;border-radius:12px;overflow:hidden;box-shadow:0 20px 48px rgba(0,0,0,0.14)}
+.term-bar{display:flex;gap:6px;padding:12px 16px;background:#252220}
+.term-dot{width:10px;height:10px;border-radius:50%}
+.term-dot:nth-child(1){background:#FF5F57}
+.term-dot:nth-child(2){background:#FFBD2E}
+.term-dot:nth-child(3){background:#28C840}
+.term pre{padding:1.5rem;font-family:'JetBrains Mono',monospace;font-size:0.8rem;line-height:1.85;color:#D4D0C8;margin:0;white-space:pre-wrap;word-break:break-all}
+.term .c{color:#6B6560}
+.term .g{color:#7DAF72}
+.term .r{color:#C4513A}
+.term .d{color:#8C8478}
+
+/* ── SECTIONS ─────────────────────────── */
+section{padding:5rem 2rem}
+.ctn{max-width:1080px;margin:0 auto}
+.sl{font-family:'JetBrains Mono',monospace;font-size:0.72rem;font-weight:500;color:var(--terra);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.75rem}
+.st{font-family:'DM Serif Display',serif;font-size:clamp(1.7rem,3.5vw,2.4rem);line-height:1.2;margin-bottom:0.75rem}
+.sd{color:var(--mid);font-size:0.95rem;max-width:580px;line-height:1.7;margin-bottom:3rem}
+
+/* ── STEPS ────────────────────────────── */
+.steps{display:grid;gap:2rem}
+.stp{display:grid;grid-template-columns:52px 1fr;gap:1.25rem;align-items:start}
+.stp-n{width:52px;height:52px;display:flex;align-items:center;justify-content:center;background:var(--warm);border-radius:10px;font-family:'DM Serif Display',serif;font-size:1.4rem;color:var(--terra)}
+.stp h3{font-size:1.05rem;font-weight:600;margin-bottom:0.3rem}
+.stp p{color:var(--mid);font-size:0.9rem;line-height:1.6}
+
+/* ── FEATURES ─────────────────────────── */
+.feats{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.25rem}
+.feat{background:#fff;border:1px solid var(--border);border-radius:12px;padding:1.75rem}
+.feat-ic{width:40px;height:40px;display:flex;align-items:center;justify-content:center;background:var(--warm);border-radius:8px;margin-bottom:0.85rem;font-family:'JetBrains Mono',monospace;font-size:0.85rem;font-weight:700;color:var(--terra)}
+.feat h3{font-size:0.95rem;font-weight:600;margin-bottom:0.4rem}
+.feat p{color:var(--mid);font-size:0.85rem;line-height:1.6}
+
+/* ── TIERS ────────────────────────────── */
+.tiers{background:var(--warm);border-radius:14px;padding:2.5rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0.85rem}
+.tier{background:#fff;border-radius:8px;padding:1.15rem;border:1px solid var(--border)}
+.tier-l{font-family:'JetBrains Mono',monospace;font-size:0.65rem;font-weight:600;color:var(--terra);letter-spacing:0.04em;margin-bottom:0.35rem}
+.tier h4{font-size:0.9rem;font-weight:600;margin-bottom:0.25rem}
+.tier p{color:var(--mid);font-size:0.78rem;line-height:1.5}
+
+/* ── COMPARISON ───────────────────────── */
+.compare{max-width:680px;margin:0 auto}
+.compare-row{display:grid;grid-template-columns:1fr 80px 80px;gap:1rem;padding:0.85rem 0;border-bottom:1px solid var(--border);align-items:center;font-size:0.88rem}
+.compare-row:first-child{font-weight:600;font-size:0.75rem;color:var(--mid);text-transform:uppercase;letter-spacing:0.06em;font-family:'JetBrains Mono',monospace;border-bottom:2px solid var(--border)}
+.compare-row span:nth-child(2),.compare-row span:nth-child(3){text-align:center;font-weight:600}
+.ck{color:var(--green)}
+.cx{color:var(--mid)}
+
+/* ── PRICING ──────────────────────────── */
+.prices{display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:1.75rem;max-width:780px;margin:0 auto}
+.pcard{background:#fff;border:2px solid var(--border);border-radius:14px;padding:2.25rem;position:relative;transition:border-color 0.15s}
+.pcard.ft{border-color:var(--terra)}
+.pcard.ft::before{position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:var(--terra);color:#fff;font-family:'JetBrains Mono',monospace;font-size:0.62rem;font-weight:600;padding:0.25rem 0.85rem;border-radius:100px;letter-spacing:0.08em}
+html:not(.ru) .pcard.ft::before{content:'POPULAR'}
+html.ru .pcard.ft::before{content:'ПОПУЛЯРНЫЙ'}
+.pn{font-family:'JetBrains Mono',monospace;font-size:0.78rem;font-weight:500;color:var(--terra);letter-spacing:0.04em;margin-bottom:0.65rem}
+.pa{font-family:'DM Serif Display',serif;font-size:2.8rem;line-height:1;margin-bottom:0.2rem}
+.pa span{font-size:0.95rem;color:var(--mid);font-family:'Inter',sans-serif}
+.pdesc{color:var(--mid);font-size:0.85rem;margin-bottom:1.75rem;padding-bottom:1.75rem;border-bottom:1px solid var(--border)}
+.pf{list-style:none;margin-bottom:1.75rem}
+.pf li{padding:0.35rem 0;font-size:0.85rem;display:flex;align-items:flex-start;gap:0.5rem}
+.pf li::before{content:'—';color:var(--terra);font-weight:700;flex-shrink:0}
+.pbtn{display:block;text-align:center;padding:0.8rem;border-radius:8px;font-weight:600;text-decoration:none;font-size:0.9rem;transition:all 0.15s}
+.pbtn-p{background:var(--terra);color:#fff}
+.pbtn-p:hover{background:var(--terra-dark)}
+.pbtn-s{background:var(--warm);color:var(--ink)}
+.pbtn-s:hover{background:var(--border)}
+
+/* ── GUARANTEE ────────────────────────── */
+.guar{background:var(--green-light);border:1px solid rgba(45,106,79,0.15);border-radius:10px;padding:1.75rem;text-align:center;max-width:600px;margin:2.5rem auto 0}
+.guar h3{font-size:0.95rem;font-weight:600;color:var(--green);margin-bottom:0.4rem}
+.guar p{color:var(--mid);font-size:0.85rem;line-height:1.6}
+
+/* ── FAQ ──────────────────────────────── */
+.faq{max-width:660px;margin:0 auto}
+.fq{border-bottom:1px solid var(--border);padding:1.35rem 0}
+.fq-q{font-weight:600;font-size:0.95rem;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:1rem}
+.fq-q::after{content:'+';font-size:1.2rem;color:var(--mid);transition:transform 0.2s;flex-shrink:0}
+.fq.open .fq-q::after{transform:rotate(45deg)}
+.fq-a{color:var(--mid);font-size:0.88rem;line-height:1.7;max-height:0;overflow:hidden;transition:max-height 0.3s,padding 0.3s}
+.fq.open .fq-a{max-height:320px;padding-top:0.6rem}
+
+/* ── CTA ──────────────────────────────── */
+.cta-box{background:var(--ink);color:#fff;border-radius:16px;padding:3.5rem 2rem;text-align:center;max-width:860px;margin:0 auto 3.5rem}
+.cta-box h2{font-family:'DM Serif Display',serif;font-size:clamp(1.65rem,3vw,2.35rem);margin-bottom:0.85rem;color:#fff}
+.cta-box p{color:#A09890;font-size:0.95rem;margin-bottom:1.75rem;max-width:480px;margin-left:auto;margin-right:auto}
+.cta-box .btn-p{font-size:1.05rem;padding:0.95rem 2.25rem}
+
+/* ── FOOTER ───────────────────────────── */
+footer{padding:2.5rem 2rem;border-top:1px solid var(--border);text-align:center}
+footer p{color:var(--mid);font-size:0.78rem}
+footer a{color:var(--terra);text-decoration:none}
+
+/* ── RESPONSIVE ───────────────────────── */
+@media(max-width:768px){
+  nav{padding:0 1rem}
+  .nav-right a:not(.nav-cta):not(.lang-sw){display:none}
+  .nav-right{gap:0.75rem}
+  .hero{padding:6rem 1.5rem 3rem}
+  .hero-nums{gap:1.5rem}
+  section{padding:3.5rem 1.5rem}
+  .tiers{padding:1.5rem}
+  .prices{grid-template-columns:1fr}
+  .stp{grid-template-columns:42px 1fr}
+  .cta-box{border-radius:10px;margin:0 1rem 3rem}
+  .compare-row{font-size:0.8rem;grid-template-columns:1fr 60px 60px}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════
+     NAV
+     ═══════════════════════════════════════ -->
+<nav>
+  <a href="#" class="nav-logo">AI <span>Department</span></a>
+  <div class="nav-right">
+    <a href="#how" data-lang="en">How it works</a>
+    <a href="#how" data-lang="ru">Как работает</a>
+    <a href="#features" data-lang="en">Features</a>
+    <a href="#features" data-lang="ru">Возможности</a>
+    <a href="#pricing" data-lang="en">Pricing</a>
+    <a href="#pricing" data-lang="ru">Цены</a>
+    <a href="#pricing" class="nav-cta" data-lang="en">Get License</a>
+    <a href="#pricing" class="nav-cta" data-lang="ru">Купить</a>
+    <div class="lang-sw">
+      <button id="btn-en" class="active" onclick="setLang('en')">EN</button>
+      <button id="btn-ru" onclick="setLang('ru')">RU</button>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════
+     HERO
+     ═══════════════════════════════════════ -->
+<section class="hero">
+  <div class="hero-tag">v5.5 — 176 agents · 7 languages · 869 tests</div>
+
+  <h1 data-lang="en">Your engineering team<br>is one <em>docker&nbsp;compose&nbsp;up</em><br>away</h1>
+  <h1 data-lang="ru">Полный штат инженеров —<br>одна команда <em>docker&nbsp;compose&nbsp;up</em></h1>
+
+  <p class="hero-sub" data-lang="en">176 autonomous agents turn a text description into production code. Runs on your server, uses your API keys. No SaaS, no vendor lock-in, no data leaves your network.</p>
+  <p class="hero-sub" data-lang="ru">176 автономных агентов превращают текстовое описание в рабочий код. Разворачивается на вашем сервере, использует ваши API-ключи. Никакого SaaS, никакой привязки к вендору, данные не покидают вашу сеть.</p>
+
+  <div class="hero-btns">
+    <a href="#pricing" class="btn btn-p" data-lang="en">Get Your License &rarr;</a>
+    <a href="#pricing" class="btn btn-p" data-lang="ru">Получить лицензию &rarr;</a>
+    <a href="#how" class="btn btn-s" data-lang="en">See how it works</a>
+    <a href="#how" class="btn btn-s" data-lang="ru">Как это работает</a>
+  </div>
+
+  <dl class="hero-nums">
+    <div>
+      <dt>176</dt>
+      <dd data-lang="en">Agents</dd>
+      <dd data-lang="ru">Агентов</dd>
+    </div>
+    <div>
+      <dt>869</dt>
+      <dd data-lang="en">Tests passing</dd>
+      <dd data-lang="ru">Тестов пройдено</dd>
+    </div>
+    <div>
+      <dt>18K+</dt>
+      <dd data-lang="en">Lines TypeScript</dd>
+      <dd data-lang="ru">Строк TypeScript</dd>
+    </div>
+    <div>
+      <dt>9</dt>
+      <dd data-lang="en">Packages</dd>
+      <dd data-lang="ru">Пакетов</dd>
+    </div>
+  </dl>
+</section>
+
+<!-- ═══════════════════════════════════════
+     TERMINAL
+     ═══════════════════════════════════════ -->
+<div class="term-wrap">
+  <div class="term">
+    <div class="term-bar"><div class="term-dot"></div><div class="term-dot"></div><div class="term-dot"></div></div>
+    <pre data-lang="en"><span class="c"># clone, configure, launch</span>
+<span class="r">$</span> git clone https://github.com/your-org/ai-department.git
+<span class="r">$</span> cp .env.example .env
+<span class="r">$</span> <span class="d"># paste LICENSE_KEY + your LLM API keys</span>
+<span class="r">$</span> docker compose up -d
+
+<span class="g">✓ AI Department v5.5 started</span>
+<span class="g">✓ License: ACTIVE — Team plan, expires 2027-03-30</span>
+<span class="g">✓ 176 agents loaded across 5 tiers</span>
+<span class="g">✓ Dashboard → http://localhost:4002</span>
+
+<span class="r">$</span> curl -X POST localhost:4000/execute \
+  -H "Authorization: Bearer $API_KEY" \
+  -d '{"task": "Build a billing dashboard with Stripe"}'
+
+<span class="g">✓ Session started — 8 agents assigned</span>
+<span class="g">✓ Scanning → Decomposing → Building...</span></pre>
+
+    <pre data-lang="ru"><span class="c"># клонируем, настраиваем, запускаем</span>
+<span class="r">$</span> git clone https://github.com/your-org/ai-department.git
+<span class="r">$</span> cp .env.example .env
+<span class="r">$</span> <span class="d"># вставьте LICENSE_KEY + ключи от LLM-провайдеров</span>
+<span class="r">$</span> docker compose up -d
+
+<span class="g">✓ AI Department v5.5 запущен</span>
+<span class="g">✓ Лицензия: АКТИВНА — план Team, до 2027-03-30</span>
+<span class="g">✓ 176 агентов загружены (5 уровней)</span>
+<span class="g">✓ Дашборд → http://localhost:4002</span>
+
+<span class="r">$</span> curl -X POST localhost:4000/execute \
+  -H "Authorization: Bearer $API_KEY" \
+  -d '{"task": "Собери биллинг-дашборд с интеграцией Stripe"}'
+
+<span class="g">✓ Сессия запущена — 8 агентов назначены</span>
+<span class="g">✓ Сканирование → Декомпозиция → Сборка...</span></pre>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     HOW IT WORKS
+     ═══════════════════════════════════════ -->
+<section id="how">
+  <div class="ctn">
+    <div class="sl" data-lang="en">How it works</div>
+    <div class="sl" data-lang="ru">Как это работает</div>
+
+    <div class="st" data-lang="en">From description to production in four steps</div>
+    <div class="st" data-lang="ru">От описания до продакшена за четыре шага</div>
+
+    <div class="sd" data-lang="en">No infrastructure to manage. No models to fine-tune. Describe what you need — the agents handle the rest.</div>
+    <div class="sd" data-lang="ru">Не нужно настраивать инфраструктуру. Не нужно дообучать модели. Опишите задачу — агенты сделают всё остальное.</div>
+
+    <div class="steps" data-lang="en">
+      <div class="stp"><div class="stp-n">1</div><div><h3>Deploy on your server</h3><p>One command: <code style="font-family:'JetBrains Mono',monospace;font-size:0.85em;background:var(--warm);padding:2px 6px;border-radius:4px">docker compose up</code>. Works anywhere Docker runs. Your infrastructure, your data, your keys.</p></div></div>
+      <div class="stp"><div class="stp-n">2</div><div><h3>Describe your project</h3><p>Send a POST request in plain language. "Build a REST API for inventory management with PostgreSQL and JWT auth." That's the entire specification.</p></div></div>
+      <div class="stp"><div class="stp-n">3</div><div><h3>Agents collaborate</h3><p>CTO decomposes the task. Backend Lead designs the API. Developers write code. QA creates tests. Security Lead audits vulnerabilities. DevOps handles deployment. Autonomously.</p></div></div>
+      <div class="stp"><div class="stp-n">4</div><div><h3>Get validated code</h3><p>Every output goes through compilation, linting, tests, and build. Failures trigger automatic LLM-powered fixes. You get a Git branch with conventional commits, ready to merge.</p></div></div>
+    </div>
+
+    <div class="steps" data-lang="ru">
+      <div class="stp"><div class="stp-n">1</div><div><h3>Разверните на своём сервере</h3><p>Одна команда: <code style="font-family:'JetBrains Mono',monospace;font-size:0.85em;background:var(--warm);padding:2px 6px;border-radius:4px">docker compose up</code>. Работает везде, где есть Docker. Ваша инфраструктура, ваши данные, ваши ключи.</p></div></div>
+      <div class="stp"><div class="stp-n">2</div><div><h3>Опишите проект</h3><p>Отправьте POST-запрос обычным текстом. «Собери REST API для управления инвентарём с PostgreSQL и JWT-авторизацией.» Это вся спецификация.</p></div></div>
+      <div class="stp"><div class="stp-n">3</div><div><h3>Агенты работают вместе</h3><p>CTO декомпозирует задачу. Backend Lead проектирует API. Разработчики пишут код. QA создаёт тесты. Security Lead проверяет уязвимости. DevOps настраивает деплой. Автономно.</p></div></div>
+      <div class="stp"><div class="stp-n">4</div><div><h3>Получите проверенный код</h3><p>Каждый результат проходит компиляцию, линтинг, тесты и сборку. При ошибках — автоматическое исправление через LLM. На выходе — Git-ветка с conventional commits, готовая к мержу.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     FEATURES
+     ═══════════════════════════════════════ -->
+<section id="features" style="background:var(--warm)">
+  <div class="ctn">
+    <div class="sl" data-lang="en">Capabilities</div>
+    <div class="sl" data-lang="ru">Возможности</div>
+
+    <div class="st" data-lang="en">What 176 agents build</div>
+    <div class="st" data-lang="ru">Что собирают 176 агентов</div>
+
+    <div class="sd" data-lang="en">Eight categories of development work, automated from start to finish.</div>
+    <div class="sd" data-lang="ru">Восемь категорий разработки, автоматизированных от начала до конца.</div>
+
+    <div class="feats" data-lang="en">
+      <div class="feat"><div class="feat-ic">fs</div><h3>Full-Stack Applications</h3><p>REST APIs, React/Next.js frontends, database schemas, authentication — complete projects from a single description.</p></div>
+      <div class="feat"><div class="feat-ic">rf</div><h3>Refactoring at Scale</h3><p>Modernize legacy codebases. Migrate frameworks. Restructure architectures. Tests stay green.</p></div>
+      <div class="feat"><div class="feat-ic">qa</div><h3>Test Generation</h3><p>Unit, integration, E2E. AAA pattern, edge cases covered. 869 tests in the codebase itself prove the approach works.</p></div>
+      <div class="feat"><div class="feat-ic">sc</div><h3>Security Audit</h3><p>OWASP Top 10, dependency scanning, vulnerability detection. A dedicated Security Lead reviews every output.</p></div>
+      <div class="feat"><div class="feat-ic">dc</div><h3>Documentation</h3><p>JSDoc, README, API docs, changelogs — generated by the Technical Writer agent as part of every task.</p></div>
+      <div class="feat"><div class="feat-ic">ci</div><h3>DevOps & CI/CD</h3><p>Dockerfiles, GitHub Actions, deployment configs. Infrastructure as code, handled by the DevOps Lead agent.</p></div>
+      <div class="feat"><div class="feat-ic">7x</div><h3>7 Languages</h3><p>TypeScript, Python, Go, Rust, Java, Ruby, and more. 70+ shell commands in the extended whitelist.</p></div>
+      <div class="feat"><div class="feat-ic">db</div><h3>Persistent Memory</h3><p>SQLite vector store with cosine similarity. Agents learn from past sessions and accumulate a knowledge graph.</p></div>
+    </div>
+
+    <div class="feats" data-lang="ru">
+      <div class="feat"><div class="feat-ic">fs</div><h3>Full-Stack приложения</h3><p>REST API, React/Next.js фронтенды, схемы баз данных, авторизация — полные проекты из одного описания.</p></div>
+      <div class="feat"><div class="feat-ic">rf</div><h3>Рефакторинг</h3><p>Модернизация легаси-кода. Миграция фреймворков. Перестройка архитектуры. Тесты остаются зелёными.</p></div>
+      <div class="feat"><div class="feat-ic">qa</div><h3>Генерация тестов</h3><p>Unit, интеграционные, E2E. Паттерн AAA, покрытие edge cases. 869 тестов в самом проекте подтверждают подход.</p></div>
+      <div class="feat"><div class="feat-ic">sc</div><h3>Аудит безопасности</h3><p>OWASP Top 10, сканирование зависимостей, поиск уязвимостей. Отдельный агент Security Lead проверяет каждый результат.</p></div>
+      <div class="feat"><div class="feat-ic">dc</div><h3>Документация</h3><p>JSDoc, README, API-документация, changelog — генерируется агентом Technical Writer при каждой задаче.</p></div>
+      <div class="feat"><div class="feat-ic">ci</div><h3>DevOps и CI/CD</h3><p>Dockerfile, GitHub Actions, конфиги деплоя. Инфраструктура как код — агент DevOps Lead.</p></div>
+      <div class="feat"><div class="feat-ic">7x</div><h3>7 языков</h3><p>TypeScript, Python, Go, Rust, Java, Ruby и другие. 70+ команд в расширенном whitelist оболочки.</p></div>
+      <div class="feat"><div class="feat-ic">db</div><h3>Постоянная память</h3><p>SQLite-хранилище с векторным поиском и cosine similarity. Агенты учатся на прошлых сессиях и строят граф знаний.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     AGENT TIERS
+     ═══════════════════════════════════════ -->
+<section>
+  <div class="ctn">
+    <div class="sl" data-lang="en">Architecture</div>
+    <div class="sl" data-lang="ru">Архитектура</div>
+
+    <div class="st" data-lang="en">5-tier agent hierarchy</div>
+    <div class="st" data-lang="ru">5-уровневая иерархия агентов</div>
+
+    <div class="sd" data-lang="en">Organized like a real engineering department. Strategy at the top, execution at the bottom.</div>
+    <div class="sd" data-lang="ru">Структура как в настоящем IT-отделе. Стратегия наверху, исполнение внизу.</div>
+
+    <div class="tiers" data-lang="en">
+      <div class="tier"><div class="tier-l">Tier 1 — Executive</div><h4>CTO & CPO</h4><p>Architecture decisions, product requirements. Highest-capability models (Opus).</p></div>
+      <div class="tier"><div class="tier-l">Tier 2 — Lead</div><h4>5 Tech Leads</h4><p>Backend, Frontend, QA, DevOps, Security. Domain ownership and code review.</p></div>
+      <div class="tier"><div class="tier-l">Tier 3 — Senior</div><h4>Senior Engineers</h4><p>Backend, Frontend, QA, Database, Technical Writer. Hands-on implementation.</p></div>
+      <div class="tier"><div class="tier-l">Tier 4 — Specialist</div><h4>Domain Experts</h4><p>Performance, accessibility, i18n — deep specialization.</p></div>
+      <div class="tier"><div class="tier-l">Tier 5 — Worker</div><h4>Task Executors</h4><p>High-volume parallel work. File ops, code gen, test runners.</p></div>
+    </div>
+
+    <div class="tiers" data-lang="ru">
+      <div class="tier"><div class="tier-l">Уровень 1 — Руководство</div><h4>CTO и CPO</h4><p>Решения по архитектуре, требования к продукту. Самые мощные модели (Opus).</p></div>
+      <div class="tier"><div class="tier-l">Уровень 2 — Лиды</div><h4>5 техлидов</h4><p>Backend, Frontend, QA, DevOps, Security. Владение доменом и ревью кода.</p></div>
+      <div class="tier"><div class="tier-l">Уровень 3 — Сеньоры</div><h4>Старшие инженеры</h4><p>Backend, Frontend, QA, Database, Technical Writer. Непосредственная реализация.</p></div>
+      <div class="tier"><div class="tier-l">Уровень 4 — Специалисты</div><h4>Эксперты</h4><p>Производительность, доступность, i18n — глубокая специализация.</p></div>
+      <div class="tier"><div class="tier-l">Уровень 5 — Воркеры</div><h4>Исполнители задач</h4><p>Массовое параллельное выполнение. Файлы, кодогенерация, запуск тестов.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     COMPARISON (without vs. with)
+     ═══════════════════════════════════════ -->
+<section style="background:var(--warm)">
+  <div class="ctn">
+    <div class="sl" data-lang="en">Comparison</div>
+    <div class="sl" data-lang="ru">Сравнение</div>
+
+    <div class="st" data-lang="en">What changes when you deploy</div>
+    <div class="st" data-lang="ru">Что меняется после внедрения</div>
+
+    <div class="compare" data-lang="en">
+      <div class="compare-row"><span></span><span>Before</span><span>After</span></div>
+      <div class="compare-row"><span>Time to ship MVP</span><span class="cx">4–8 weeks</span><span class="ck">hours</span></div>
+      <div class="compare-row"><span>Test coverage setup</span><span class="cx">days</span><span class="ck">automatic</span></div>
+      <div class="compare-row"><span>Security review</span><span class="cx">outsource</span><span class="ck">built-in</span></div>
+      <div class="compare-row"><span>Documentation</span><span class="cx">forgotten</span><span class="ck">generated</span></div>
+      <div class="compare-row"><span>CI/CD pipeline</span><span class="cx">manual</span><span class="ck">generated</span></div>
+      <div class="compare-row"><span>Code review</span><span class="cx">wait for PR</span><span class="ck">instant</span></div>
+      <div class="compare-row"><span>Vendor lock-in</span><span class="cx">yes</span><span class="ck">none</span></div>
+    </div>
+
+    <div class="compare" data-lang="ru">
+      <div class="compare-row"><span></span><span>Было</span><span>Стало</span></div>
+      <div class="compare-row"><span>Время до MVP</span><span class="cx">4–8 нед.</span><span class="ck">часы</span></div>
+      <div class="compare-row"><span>Покрытие тестами</span><span class="cx">дни</span><span class="ck">автоматически</span></div>
+      <div class="compare-row"><span>Аудит безопасности</span><span class="cx">аутсорс</span><span class="ck">встроен</span></div>
+      <div class="compare-row"><span>Документация</span><span class="cx">забыли</span><span class="ck">генерируется</span></div>
+      <div class="compare-row"><span>CI/CD</span><span class="cx">вручную</span><span class="ck">генерируется</span></div>
+      <div class="compare-row"><span>Ревью кода</span><span class="cx">ждать PR</span><span class="ck">мгновенно</span></div>
+      <div class="compare-row"><span>Привязка к вендору</span><span class="cx">да</span><span class="ck">нет</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     PRICING
+     ═══════════════════════════════════════ -->
+<section id="pricing">
+  <div class="ctn">
+    <div class="sl" data-lang="en">Pricing</div>
+    <div class="sl" data-lang="ru">Тарифы</div>
+
+    <div class="st" data-lang="en">One key. All 176 agents.</div>
+    <div class="st" data-lang="ru">Один ключ. Все 176 агентов.</div>
+
+    <div class="sd" data-lang="en">Self-hosted. You bring your own LLM API keys. No per-seat, no usage caps.</div>
+    <div class="sd" data-lang="ru">Разворачивается у вас. Свои ключи к LLM. Без ограничений по пользователям и запросам.</div>
+
+    <div class="prices">
+
+      <!-- TEAM -->
+      <div class="pcard ft">
+        <div class="pn">TEAM</div>
+        <div class="pa">$199<span data-lang="en">/mo</span><span data-lang="ru">/мес</span></div>
+
+        <div class="pdesc" data-lang="en">For teams shipping real products.</div>
+        <div class="pdesc" data-lang="ru">Для команд, выпускающих реальные продукты.</div>
+
+        <ul class="pf" data-lang="en">
+          <li>All 176 agents, all 5 tiers</li>
+          <li>Full E2E autonomous pipeline</li>
+          <li>7 programming languages</li>
+          <li>6 LLM providers (bring your keys)</li>
+          <li>Dashboard + Prometheus metrics</li>
+          <li>Docker Compose deployment</li>
+          <li>SQLite vector memory</li>
+          <li>Email support — 48h response</li>
+        </ul>
+        <ul class="pf" data-lang="ru">
+          <li>Все 176 агентов, все 5 уровней</li>
+          <li>Полный E2E автономный пайплайн</li>
+          <li>7 языков программирования</li>
+          <li>6 LLM-провайдеров (ваши ключи)</li>
+          <li>Дашборд + метрики Prometheus</li>
+          <li>Развёртывание через Docker Compose</li>
+          <li>Векторная память SQLite</li>
+          <li>Поддержка по email — ответ 48ч</li>
+        </ul>
+
+        <!-- REPLACE with your Stripe Payment Link -->
+        <a href="https://buy.stripe.com/test_8x25kFaU2gES0Ud6KV2sM02" class="pbtn pbtn-p" data-lang="en">Buy Team License &rarr;</a>
+        <a href="https://buy.stripe.com/test_8x25kFaU2gES0Ud6KV2sM02" class="pbtn pbtn-p" data-lang="ru">Купить Team &rarr;</a>
+      </div>
+
+      <!-- ENTERPRISE -->
+      <div class="pcard">
+        <div class="pn">ENTERPRISE</div>
+        <div class="pa">$999<span data-lang="en">/mo</span><span data-lang="ru">/мес</span></div>
+
+        <div class="pdesc" data-lang="en">For organizations needing custom agents and priority support.</div>
+        <div class="pdesc" data-lang="ru">Для организаций с потребностью в кастомных агентах и приоритетной поддержке.</div>
+
+        <ul class="pf" data-lang="en">
+          <li>Everything in Team, plus:</li>
+          <li>Custom agent configurations</li>
+          <li>Priority support — 24h response</li>
+          <li>Onboarding call (1 hour)</li>
+          <li>Custom LLM model routing</li>
+          <li>Advanced cost controls</li>
+          <li>HITL workflow customization</li>
+          <li>Dedicated Slack channel</li>
+        </ul>
+        <ul class="pf" data-lang="ru">
+          <li>Всё из Team, плюс:</li>
+          <li>Кастомные конфигурации агентов</li>
+          <li>Приоритетная поддержка — ответ 24ч</li>
+          <li>Онбординг-звонок (1 час)</li>
+          <li>Настройка маршрутизации моделей</li>
+          <li>Расширенный контроль расходов</li>
+          <li>Настройка HITL-воркфлоу</li>
+          <li>Отдельный Slack-канал</li>
+        </ul>
+
+        <!-- REPLACE with your Stripe Payment Link -->
+        <a href="https://buy.stripe.com/test_aFadRb9PYewK7iB0mx2sM03" class="pbtn pbtn-s" data-lang="en">Contact for Enterprise &rarr;</a>
+        <a href="https://buy.stripe.com/test_aFadRb9PYewK7iB0mx2sM03" class="pbtn pbtn-s" data-lang="ru">Связаться &rarr;</a>
+      </div>
+    </div>
+
+    <div class="guar">
+      <h3 data-lang="en">14-Day Money-Back Guarantee</h3>
+      <h3 data-lang="ru">Гарантия возврата 14 дней</h3>
+      <p data-lang="en">If AI Department doesn't save your team time within two weeks, full refund. No questions.</p>
+      <p data-lang="ru">Если AI Department не сэкономит вашей команде время за две недели — полный возврат. Без вопросов.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     FAQ
+     ═══════════════════════════════════════ -->
+<section id="faq">
+  <div class="ctn">
+    <div class="sl" data-lang="en">Questions</div>
+    <div class="sl" data-lang="ru">Вопросы</div>
+
+    <div class="st" data-lang="en">Frequently asked</div>
+    <div class="st" data-lang="ru">Частые вопросы</div>
+
+    <!-- EN FAQ -->
+    <div class="faq" data-lang="en">
+      <div class="fq"><div class="fq-q">What do I need to run it?</div><div class="fq-a">A machine with Docker and at least one LLM API key (Anthropic, OpenAI, DeepSeek, Groq, Gemini, or local Ollama). Minimum 4 GB RAM, 2 cores. Linux, macOS, Windows with WSL.</div></div>
+      <div class="fq"><div class="fq-q">Do you see my code or data?</div><div class="fq-a">No. The system runs entirely on your server. License validation is local — no phone-home, no telemetry, no data collection.</div></div>
+      <div class="fq"><div class="fq-q">Which LLM providers work?</div><div class="fq-a">Six out of the box: Anthropic Claude (best quality), OpenAI / OpenRouter, DeepSeek (cheapest), Groq (fastest), Google Gemini, and Ollama (free, local). Use several at once with intelligent routing.</div></div>
+      <div class="fq"><div class="fq-q">What if my license expires?</div><div class="fq-a">The system shows a warning but keeps running. Soft gate — we trust our users. Renew to get updates and support.</div></div>
+      <div class="fq"><div class="fq-q">How much does LLM usage cost?</div><div class="fq-a">Depends on workload. Built-in cost controls: per-session budget (default $2), daily cap (default $50), smart routing. A typical full project build: $1–5 in API calls.</div></div>
+      <div class="fq"><div class="fq-q">Can I customize the agents?</div><div class="fq-a">Yes. Agent configs are Markdown files with YAML front matter in configs/agents/. Edit, add, remove. Enterprise includes configuration support.</div></div>
+      <div class="fq"><div class="fq-q">How do I get the key after payment?</div><div class="fq-a">We send the license key to your email within 1 business hour (usually minutes). Paste it into .env, restart, done.</div></div>
+    </div>
+
+    <!-- RU FAQ -->
+    <div class="faq" data-lang="ru">
+      <div class="fq"><div class="fq-q">Что нужно для запуска?</div><div class="fq-a">Машина с Docker и хотя бы один API-ключ от LLM-провайдера (Anthropic, OpenAI, DeepSeek, Groq, Gemini или локальный Ollama). Минимум 4 ГБ RAM, 2 ядра. Linux, macOS, Windows с WSL.</div></div>
+      <div class="fq"><div class="fq-q">Вы видите мой код или данные?</div><div class="fq-a">Нет. Система работает целиком на вашем сервере. Лицензия проверяется локально — никаких обращений наружу, никакой телеметрии, никакого сбора данных.</div></div>
+      <div class="fq"><div class="fq-q">Какие LLM-провайдеры поддерживаются?</div><div class="fq-a">Шесть из коробки: Anthropic Claude (лучшее качество), OpenAI / OpenRouter, DeepSeek (самый дешёвый), Groq (самый быстрый), Google Gemini и Ollama (бесплатно, локально). Можно использовать несколько одновременно с интеллектуальной маршрутизацией.</div></div>
+      <div class="fq"><div class="fq-q">Что будет, если лицензия истечёт?</div><div class="fq-a">Система покажет предупреждение, но продолжит работать. Мягкая блокировка — мы доверяем пользователям. Продление даёт доступ к обновлениям и поддержке.</div></div>
+      <div class="fq"><div class="fq-q">Сколько стоит использование LLM?</div><div class="fq-a">Зависит от нагрузки. Встроенный контроль расходов: бюджет на сессию ($2 по умолчанию), дневной лимит ($50), умная маршрутизация. Типичная полная сборка проекта: $1–5 за API-вызовы.</div></div>
+      <div class="fq"><div class="fq-q">Можно ли настроить агентов?</div><div class="fq-a">Да. Конфигурации агентов — Markdown-файлы с YAML front matter в configs/agents/. Редактируйте, добавляйте, удаляйте. Enterprise-план включает помощь с настройкой.</div></div>
+      <div class="fq"><div class="fq-q">Как получить ключ после оплаты?</div><div class="fq-a">Отправляем лицензионный ключ на вашу почту в течение 1 рабочего часа (обычно за минуты). Вставьте в .env, перезапустите — готово.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     FINAL CTA
+     ═══════════════════════════════════════ -->
+<div style="padding:2rem">
+  <div class="cta-box">
+    <h2 data-lang="en">Ship your next project<br>with 176 engineers</h2>
+    <h2 data-lang="ru">Соберите следующий проект<br>силами 176 инженеров</h2>
+    <p data-lang="en">Stop waiting for hires. Describe what you need, get production code.</p>
+    <p data-lang="ru">Хватит ждать наём. Опишите задачу — получите рабочий код.</p>
+    <a href="#pricing" class="btn btn-p" data-lang="en">Get Your License &rarr;</a>
+    <a href="#pricing" class="btn btn-p" data-lang="ru">Получить лицензию &rarr;</a>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     FOOTER
+     ═══════════════════════════════════════ -->
+<footer>
+  <p data-lang="en">&copy; 2026 AI Department. Built with 176 agents and shipped with confidence.</p>
+  <p data-lang="ru">&copy; 2026 AI Department. Собран 176 агентами и отправлен с уверенностью.</p>
+  <p style="margin-top:0.5rem"><a href="mailto:ekbpayment25@gmail.com">ekbpayment25@gmail.com</a></p>
+</footer>
+
+<!-- ═══════════════════════════════════════
+     JS — minimal, no frameworks
+     ═══════════════════════════════════════ -->
+<script>
+function setLang(l){
+  document.documentElement.className=l==='ru'?'ru':'';
+  document.getElementById('btn-en').className=l==='en'?'active':'';
+  document.getElementById('btn-ru').className=l==='ru'?'active':'';
+  try{localStorage.setItem('lang',l)}catch(e){}
+}
+// Restore saved language
+try{var saved=localStorage.getItem('lang');if(saved)setLang(saved)}catch(e){}
+
+// Detect browser language on first visit
+if(!saved&&navigator.language&&navigator.language.startsWith('ru'))setLang('ru');
+
+// FAQ toggle
+document.addEventListener('click',function(e){
+  var q=e.target.closest('.fq-q');
+  if(q)q.parentElement.classList.toggle('open');
+});
+
+// Smooth scroll
+document.addEventListener('click',function(e){
+  var a=e.target.closest('a[href^="#"]');
+  if(!a)return;
+  e.preventDefault();
+  var t=document.querySelector(a.getAttribute('href'));
+  if(t)t.scrollIntoView({behavior:'smooth',block:'start'});
+});
+
+// ── WELCOME MODAL after Stripe payment ──
+(function(){
+  var p=new URLSearchParams(window.location.search);
+  var plan=p.get('welcome');
+  if(!plan)return;
+  var isRu=document.documentElement.classList.contains('ru');
+  var planName=plan==='enterprise'?'Enterprise':'Team';
+  var overlay=document.createElement('div');
+  overlay.id='welcome-overlay';
+  overlay.innerHTML=
+    '<div class="wm-box">'+
+    '<div class="wm-icon">&#10003;</div>'+
+    '<h2>'+(isRu?'Оплата прошла успешно!':'Payment Successful!')+'</h2>'+
+    '<p class="wm-plan">AI Department — '+planName+'</p>'+
+    '<p>'+(isRu
+      ?'Спасибо за покупку! В течение 24 часов вы получите на email:'
+      :'Thank you! Within 24 hours you will receive by email:')+'</p>'+
+    '<ul>'+
+    '<li>'+(isRu?'Лицензионный ключ (формат AIDPT-XXXXX-XXXXX-XXXXX-XXXXX)':'License key (format AIDPT-XXXXX-XXXXX-XXXXX-XXXXX)')+'</li>'+
+    '<li>'+(isRu?'Инструкцию по установке и запуску':'Setup and launch guide')+'</li>'+
+    '<li>'+(isRu?'Доступ к приватному репозиторию':'Access to the private repository')+'</li>'+
+    '</ul>'+
+    '<p style="margin-top:1.2rem;font-size:0.85rem;color:var(--mid)">'+(isRu
+      ?'Вопросы? Пишите на '
+      :'Questions? Email ')+'<a href="mailto:ekbpayment25@gmail.com">ekbpayment25@gmail.com</a></p>'+
+    '<button onclick="document.getElementById(\'welcome-overlay\').remove();history.replaceState(null,\'\',location.pathname)">'+(isRu?'Закрыть':'Close')+'</button>'+
+    '</div>';
+  document.body.appendChild(overlay);
+})();
+</script>
+
+<style>
+#welcome-overlay{position:fixed;inset:0;z-index:9999;background:rgba(26,23,20,0.55);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;animation:wm-fade .3s}
+@keyframes wm-fade{from{opacity:0}to{opacity:1}}
+.wm-box{background:var(--cream);border-radius:16px;padding:3rem 2.5rem;max-width:520px;width:90%;text-align:center;box-shadow:0 24px 48px rgba(0,0,0,0.15)}
+.wm-icon{width:64px;height:64px;border-radius:50%;background:var(--green);color:#fff;font-size:2rem;display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem}
+.wm-box h2{font-family:'DM Serif Display',serif;font-size:1.6rem;margin-bottom:0.5rem}
+.wm-plan{font-family:'JetBrains Mono',monospace;font-size:0.85rem;color:var(--terra);font-weight:600;margin-bottom:1.2rem}
+.wm-box ul{text-align:left;list-style:none;margin:1rem 0;padding:0}
+.wm-box li{padding:0.4rem 0 0.4rem 1.5rem;position:relative;font-size:0.92rem}
+.wm-box li::before{content:'→';position:absolute;left:0;color:var(--terra)}
+.wm-box button{margin-top:1.5rem;background:var(--ink);color:var(--cream);border:none;padding:0.75rem 2.5rem;border-radius:8px;font-family:'Inter',sans-serif;font-size:0.95rem;font-weight:600;cursor:pointer;transition:background 0.15s}
+.wm-box button:hover{background:var(--terra)}
+</style>
+
+</body>
+</html>
